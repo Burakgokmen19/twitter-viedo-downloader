@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TwitSave - Twitter Video Downloader | Download Twitter Videos Free</title>
+  <meta name="description" content="Download Twitter and X videos for free. Fast and easy video download in high quality MP4 format. Save Twitter videos with TwitSave.">
+  <meta name="keywords" content="twitter video downloader, download twitter video, x video downloader, save twitter video, twitter mp4 download, tweet video download">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="TwitSave - Twitter Video Downloader">
+  <meta property="og:description" content="Download Twitter and X videos for free in high quality.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Google Ads - Paste your AdSense code here when ready -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+</head>
+<body>
+  <!-- Floating Shapes Background -->
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+    <div class="shape shape-5"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="url(#logoGrad)" stroke="white" stroke-width="0.5"/>
+          <path d="M8 12L10.5 14.5L16 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="logoGrad" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#B8A9E8"/><stop offset="1" stop-color="#F2B5D4"/></linearGradient></defs>
+        </svg>
+        <span>TwitSave</span>
+      </a>
+      <div class="nav-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Ad Banner Top (hidden for now) -->
+  <!-- <div class="ad-container ad-top"><div class="container"><ins class="adsbygoogle" ...></ins></div></div> -->
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">✨ Free & Fast</div>
+      <h1>Download Twitter Videos <span class="gradient-text">Effortlessly</span></h1>
+      <p class="hero-subtitle">Paste a tweet link, choose your quality, and download instantly. No sign-up required, completely free!</p>
+
+      <!-- Download Form -->
+      <div class="download-card">
+        <div class="input-wrapper">
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <input type="text" id="urlInput" placeholder="Paste your Twitter/X video link here..." autocomplete="off">
+          <button id="pasteBtn" class="paste-btn" title="Paste">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+        <button id="downloadBtn" class="download-btn">
+          <span class="btn-text">Get Video</span>
+          <span class="btn-loader" style="display:none;">
+            <span class="spinner"></span> Searching...
+          </span>
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMsg" class="error-message" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section id="results" class="results-section" style="display:none;">
+    <div class="container">
+      <div class="result-card">
+        <div class="tweet-info">
+          <img id="tweetAvatar" class="tweet-avatar" src="" alt="Avatar">
+          <div class="tweet-meta">
+            <span id="tweetAuthor" class="tweet-author"></span>
+            <span id="tweetUsername" class="tweet-username"></span>
+          </div>
+        </div>
+        <p id="tweetText" class="tweet-text"></p>
+
+        <div class="video-preview">
+          <img id="videoThumbnail" src="" alt="Video Thumbnail" class="thumbnail">
+          <div class="play-overlay">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+
+        <h3 class="download-title">Download Options</h3>
+        <div id="downloadOptions" class="download-options"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ad Banner Middle (hidden for now) -->
+  <!-- <div class="ad-container ad-middle"><div class="container"><ins class="adsbygoogle" ...></ins></div></div> -->
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-section">
+    <div class="container">
+      <h2 class="section-title">How It <span class="gradient-text">Works</span></h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Copy the Link</h3>
+          <p>Copy the link of the video from Twitter or X</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" stroke-width="2"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Paste It</h3>
+          <p>Paste the link in the box above and click "Get Video"</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Download</h3>
+          <p>Choose your preferred quality and download the video</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="container">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Super Fast</h3>
+          <p>Download videos in seconds, no waiting required</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎬</div>
+          <h3>HD Quality</h3>
+          <p>Multiple quality options including 720p, 480p and 360p</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure</h3>
+          <p>Your data is safe, no registration or login required</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>All Devices</h3>
+          <p>Works flawlessly on phones, tablets and desktops</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked <span class="gradient-text">Questions</span></h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>How do I use TwitSave?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Copy the link of the video from Twitter or X, paste it in the box above, and click "Get Video". Then choose your preferred quality and download the video.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Is TwitSave free?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes, TwitSave is completely free. No registration or payment required.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What quality options are available?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Depending on the video, we typically offer High (720p), Medium (480p), and Low (360p) quality options.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Can I use it on my phone?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! TwitSave is fully mobile-friendly. It works perfectly on iPhone, Android, and tablets.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ad Banner Bottom (hidden for now) -->
+  <!-- <div class="ad-container ad-bottom"><div class="container"><ins class="adsbygoogle" ...></ins></div></div> -->
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="url(#logoGrad2)" stroke="white" stroke-width="0.5"/>
+              <path d="M8 12L10.5 14.5L16 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs><linearGradient id="logoGrad2" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#B8A9E8"/><stop offset="1" stop-color="#F2B5D4"/></linearGradient></defs>
+            </svg>
+            <span>TwitSave</span>
+          </a>
+          <p>The easiest way to download Twitter and X videos for free.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer-links">
+          <h4>Legal</h4>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 TwitSave. All rights reserved. Twitter is a registered trademark of X Corp.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

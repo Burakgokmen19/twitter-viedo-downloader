@@ -45,7 +45,7 @@ function validatePlatformUrl(value, platform) {
   if (platform === 'instagram') {
     const allowedHosts = ['instagram.com', 'www.instagram.com'];
     const validPath = /^\/(?:reel|reels|p|tv)\/[A-Za-z0-9_-]+\/?/i.test(url.pathname);
-    return allowedHosts.includes(hostname) && validPath ? url.href : null;
+    return allowedHosts.includes(hostname) && validPath ? `${url.origin}${url.pathname}` : null;
   }
 
   if (platform === 'tiktok') {
@@ -60,20 +60,33 @@ function validatePlatformUrl(value, platform) {
       && /^\/[A-Za-z0-9]+\/?$/i.test(url.pathname);
     const videoLink = /^\/@[^/]+\/video\/\d+\/?/i.test(url.pathname)
       || /^\/t\/[A-Za-z0-9_-]+\/?$/i.test(url.pathname);
-    return allowedHosts.includes(hostname) && (shortLink || videoLink) ? url.href : null;
+    return allowedHosts.includes(hostname) && (shortLink || videoLink) ? `${url.origin}${url.pathname}` : null;
   }
 
   return null;
 }
 
-function getVideoInfo(url) {
+function getVideoInfo(url, platform) {
   return new Promise((resolve, reject) => {
+    let timedOut = false;
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
     const child = spawn(ytDlpPath, [
       '--ignore-config',
+      '--force-ipv4',
       '--dump-single-json',
       '--skip-download',
       '--no-playlist',
       '--no-warnings',
+      '--retries',
+      '1',
+      '--extractor-retries',
+      '1',
+      '--socket-timeout',
+      '12',
+      '--user-agent',
+      userAgent,
+      '--referer',
+      `https://${platform}.com/`,
       '--format',
       'best[ext=mp4]/best',
       url
@@ -82,7 +95,10 @@ function getVideoInfo(url) {
     const output = [];
     let outputSize = 0;
     let stderr = '';
-    const timeout = setTimeout(() => child.kill(), 30000);
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, 35000);
 
     child.stdout.on('data', chunk => {
       outputSize += chunk.length;
@@ -99,7 +115,9 @@ function getVideoInfo(url) {
     child.on('close', code => {
       clearTimeout(timeout);
       if (code !== 0 || outputSize > 5 * 1024 * 1024) {
-        reject(new Error(stderr.trim() || `yt-dlp exited with ${code}`));
+        const error = new Error(stderr.trim() || `yt-dlp exited with ${code}`);
+        error.code = timedOut ? 'ETIMEDOUT' : '';
+        reject(error);
         return;
       }
 
@@ -112,6 +130,26 @@ function getVideoInfo(url) {
   });
 }
 
+function getPlatformErrorMessage(error) {
+  if (error.code === 'ENOENT') {
+    return 'Sunucuda video indirme aracı bulunamadı. Yeniden deploy edip tekrar dene.';
+  }
+
+  if (error.code === 'ETIMEDOUT' || /timed out|curl: \(28\)|resolving timed out/i.test(error.message)) {
+    return 'Instagram/TikTok sunucusuna zamanında ulaşılamadı. Biraz sonra tekrar dene.';
+  }
+
+  if (/login required|log in|private|not available|age.?restricted/i.test(error.message)) {
+    return 'Bu video herkese açık olmayabilir veya platform oturum isteyebilir.';
+  }
+
+  if (/unsupported url|no suitable extractor/i.test(error.message)) {
+    return 'Bu bağlantı biçimi desteklenmiyor. Video bağlantısını doğrudan kopyalayıp tekrar dene.';
+  }
+
+  return 'Video alınamadı. Bağlantının herkese açık olduğunu kontrol edip tekrar dene.';
+}
+
 app.post('/api/platform/download', async (req, res) => {
   const { url, platform } = req.body || {};
   const videoUrl = validatePlatformUrl(url, platform);
@@ -120,7 +158,7 @@ app.post('/api/platform/download', async (req, res) => {
   }
 
   try {
-    const info = await getVideoInfo(videoUrl);
+    const info = await getVideoInfo(videoUrl, platform);
 
     if (!info || info._type === 'playlist' || (!info.url && !info.formats?.length)) {
       return res.status(404).json({ error: 'Bu bağlantıda indirilebilir bir video bulunamadı.' });
@@ -146,7 +184,7 @@ app.post('/api/platform/download', async (req, res) => {
     });
   } catch (error) {
     console.error('Platform video lookup error:', error.message);
-    res.status(502).json({ error: 'Video bilgisi alınamadı. Bağlantıyı kontrol edip tekrar dene.' });
+    res.status(502).json({ error: getPlatformErrorMessage(error) });
   }
 });
 
@@ -159,6 +197,7 @@ app.get('/api/platform-video', (req, res) => {
 
   const child = spawn(ytDlpPath, [
     '--ignore-config',
+    '--force-ipv4',
     '--format',
     'best[ext=mp4]/best',
     '--output',
@@ -168,6 +207,16 @@ app.get('/api/platform-video', (req, res) => {
     '--no-playlist',
     '--no-warnings',
     '--quiet',
+    '--retries',
+    '1',
+    '--extractor-retries',
+    '1',
+    '--socket-timeout',
+    '12',
+    '--user-agent',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    '--referer',
+    `https://${platform}.com/`,
     videoUrl
   ], { windowsHide: true });
 

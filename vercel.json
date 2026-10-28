@@ -6,6 +6,12 @@
       "use": "@vercel/node"
     }
   ],
+  "functions": {
+    "server.js": {
+      "includeFiles": "node_modules/yt-dlp-bin/**",
+      "maxDuration": 60
+    }
+  },
   "routes": [
     { "src": "/(.*)", "dest": "/server.js" }
   ]

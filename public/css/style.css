@@ -1056,3 +1056,292 @@ body {
   background: rgba(184, 169, 232, 0.3);
   color: var(--text-primary);
 }
+
+/* Field Notes theme */
+:root {
+  --primary: #284b39;
+  --primary-dark: #19382a;
+  --secondary: #e7dcc1;
+  --accent: #c9d2b2;
+  --accent-green: #8ca184;
+  --bg-main: #f3efe4;
+  --bg-card: #fffdf7;
+  --bg-input: #f5f1e7;
+  --text-primary: #202b23;
+  --text-secondary: #657067;
+  --text-light: #899188;
+  --border: #dedccf;
+  --shadow-sm: 0 4px 14px rgba(34, 52, 39, 0.06);
+  --shadow-md: 0 12px 32px rgba(34, 52, 39, 0.09);
+  --shadow-lg: 0 24px 70px rgba(34, 52, 39, 0.12);
+  --shadow-glow: 0 0 0 4px rgba(40, 75, 57, 0.08);
+  --gradient: linear-gradient(110deg, #284b39 10%, #70866d 92%);
+  --gradient-btn: linear-gradient(135deg, #284b39, #355a43);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+}
+
+body {
+  background-color: var(--bg-main);
+  background-image: radial-gradient(rgba(40, 75, 57, 0.055) 0.7px, transparent 0.7px);
+  background-size: 15px 15px;
+}
+
+.container { max-width: 1160px; }
+.floating-shapes { display: none; }
+.navbar {
+  background: rgba(243, 239, 228, 0.94);
+  border-bottom-color: rgba(40, 75, 57, 0.12);
+  padding: 18px 0;
+}
+.logo { font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.8px; }
+.logo-icon { width: 32px; height: 32px; }
+.nav-links a { font-size: 0.88rem; }
+.nav-links a:hover, .footer-links a:hover { color: var(--primary); }
+
+.hero {
+  text-align: left;
+  padding: 76px 0 58px;
+}
+.hero .container { max-width: 860px; }
+.hero-badge {
+  background: #e4e6d6;
+  border: 0;
+  color: var(--primary);
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 0.7rem;
+  padding: 8px 12px;
+  margin-bottom: 25px;
+}
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #607d5c;
+  vertical-align: 1px;
+}
+.hero h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(3.2rem, 8vw, 6.4rem);
+  letter-spacing: -4px;
+  line-height: 0.98;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+.gradient-text {
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: #78866b;
+  font-style: italic;
+}
+.hero-subtitle {
+  max-width: 490px;
+  margin: 0 0 30px;
+  font-size: 1.05rem;
+}
+.platform-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 720px;
+  margin: 0 0 16px;
+}
+.platform-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 13px 14px;
+  background: rgba(255, 253, 247, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.platform-active {
+  background: #fffdf7;
+  border-color: #879a83;
+  box-shadow: inset 0 0 0 1px #879a83;
+}
+.platform-card:hover { border-color: #879a83; }
+.platform-card:focus-visible { outline: 3px solid #8da184; outline-offset: 3px; }
+.platform-mark {
+  display: grid;
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border-radius: 9px;
+  font-size: 1.25rem;
+  color: white;
+  background: var(--primary);
+}
+.instagram-mark { background: #94785d; }
+.tiktok-mark { background: #303c35; }
+.platform-card strong, .platform-card small { display: block; }
+.platform-card strong { font-size: 0.8rem; }
+.platform-card small { margin-top: 2px; color: var(--text-light); font-size: 0.68rem; }
+.platform-state {
+  margin-left: auto;
+  color: #72816e;
+  font-size: 0.57rem;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  white-space: nowrap;
+}
+.platform-card:not(.platform-active) .platform-state { color: #987b50; }
+
+.download-card {
+  max-width: 720px;
+  min-height: 76px;
+  padding: 8px;
+  background: #fffdf7;
+  border: 1px solid #d5d8cb;
+  border-radius: 13px;
+  box-shadow: 0 14px 36px rgba(34, 52, 39, 0.08);
+}
+.input-wrapper {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+.input-wrapper:focus-within { border-color: #a4b09b; }
+.input-icon, .paste-btn { color: #7a8578; }
+.paste-btn:hover { background: #edf0e7; color: var(--primary); }
+.download-btn {
+  border-radius: 9px;
+  padding: 15px 21px;
+}
+.download-btn:hover { box-shadow: 0 8px 20px rgba(40, 75, 57, 0.22); }
+.hero-note {
+  margin-top: 13px;
+  color: var(--text-light);
+  font-size: 0.76rem;
+}
+.error-message {
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 9px;
+}
+
+.results-section { padding-top: 5px; }
+.result-card {
+  border-radius: 18px;
+  border-color: #e0ddcf;
+}
+.video-preview { border-radius: 11px; }
+.download-option { border-width: 1px; border-radius: 11px; }
+.download-option:hover {
+  border-color: #91a18b;
+  background: #f7f7ef;
+}
+.download-option-btn { background: var(--primary); border-radius: 8px; }
+.download-option-btn:hover { background: var(--primary-dark); box-shadow: none; }
+.download-option-icon { border-radius: 10px; }
+.share-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 22px;
+  padding: 17px;
+  border: 1px solid #d9e3d6;
+  border-radius: 12px;
+  background: #f2f5ee;
+}
+.share-row strong, .share-row span { display: block; }
+.share-row strong { margin-bottom: 3px; font-size: 0.87rem; }
+.share-row span { color: var(--text-secondary); font-size: 0.73rem; }
+.whatsapp-btn {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9px;
+  background: #315a40;
+  color: #fffdf7;
+  padding: 12px 15px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.whatsapp-btn:hover:not(:disabled) { background: #234731; transform: translateY(-1px); }
+.whatsapp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.whatsapp-btn span { display: inline; margin-right: 5px; color: inherit; font-size: 1rem; }
+
+.how-section, .faq-section { padding: 68px 0; }
+.section-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2.4rem;
+  font-weight: 500;
+  letter-spacing: -1.2px;
+}
+.step-card, .feature-card, .faq-item {
+  background: rgba(255, 253, 247, 0.84);
+  border-color: #e0ddcf;
+  box-shadow: none;
+}
+.step-card { border-radius: 14px; }
+.step-card:hover, .feature-card:hover { box-shadow: var(--shadow-sm); }
+.step-number { background: var(--primary); box-shadow: none; }
+.step-icon { background: #e9eddf; color: var(--primary); border-radius: 13px; }
+.features-section { padding-bottom: 30px; }
+.feature-card { border-radius: 12px; }
+.feature-icon { filter: saturate(0.65); }
+.faq-item { border-radius: 11px; }
+.faq-item.active .faq-answer { max-height: 260px; }
+.footer {
+  background: #e8e5d9;
+  border-top: 1px solid #d6d5c8;
+  margin-top: 25px;
+}
+.footer-bottom { border-top-color: #d6d5c8; }
+.footer .logo { font-size: 1.25rem; }
+.footer-brand p { max-width: 290px; }
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 3px solid #8da184;
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 54px 0 38px; }
+  .hero h1 { font-size: clamp(3rem, 11vw, 4.4rem); letter-spacing: -2.5px; }
+  .hero-subtitle { max-width: 450px; }
+  .platform-strip { gap: 7px; }
+  .platform-card { gap: 8px; padding: 10px 8px; }
+  .platform-state { display: none; }
+  .platform-mark { flex-basis: 31px; width: 31px; height: 31px; }
+  .section-title { font-size: 2rem; }
+}
+@media (max-width: 480px) {
+  .nav-links { gap: 12px; }
+  .nav-links a { font-size: 0.75rem; }
+  .hero { padding-top: 42px; }
+  .hero h1 { font-size: 3.2rem; }
+  .hero-subtitle { font-size: 0.94rem; }
+  .platform-strip { grid-template-columns: 1fr; }
+  .platform-card { padding: 9px 11px; }
+  .platform-state { display: block; }
+  .platform-mark { flex-basis: 32px; width: 32px; height: 32px; }
+  .share-row { align-items: stretch; flex-direction: column; gap: 12px; }
+  .whatsapp-btn { width: 100%; }
+  .section-title { font-size: 1.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

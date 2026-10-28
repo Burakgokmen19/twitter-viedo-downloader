@@ -2,9 +2,16 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
+const { spawn } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ytDlpPath = path.join(
+  __dirname,
+  'node_modules',
+  'yt-dlp-bin',
+  process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
+);
 
 app.use(cors());
 app.use(express.json());
@@ -21,6 +28,175 @@ function extractTweetId(url) {
   }
   return null;
 }
+
+function validatePlatformUrl(value, platform) {
+  if (typeof value !== 'string' || value.length > 2048) return null;
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+
+  if (url.protocol !== 'https:') return null;
+
+  const hostname = url.hostname.toLowerCase();
+  if (platform === 'instagram') {
+    const allowedHosts = ['instagram.com', 'www.instagram.com'];
+    const validPath = /^\/(?:reel|reels|p|tv)\/[A-Za-z0-9_-]+\/?/i.test(url.pathname);
+    return allowedHosts.includes(hostname) && validPath ? url.href : null;
+  }
+
+  if (platform === 'tiktok') {
+    const allowedHosts = [
+      'tiktok.com',
+      'www.tiktok.com',
+      'm.tiktok.com',
+      'vm.tiktok.com',
+      'vt.tiktok.com'
+    ];
+    const shortLink = ['vm.tiktok.com', 'vt.tiktok.com'].includes(hostname)
+      && /^\/[A-Za-z0-9]+\/?$/i.test(url.pathname);
+    const videoLink = /^\/@[^/]+\/video\/\d+\/?/i.test(url.pathname)
+      || /^\/t\/[A-Za-z0-9_-]+\/?$/i.test(url.pathname);
+    return allowedHosts.includes(hostname) && (shortLink || videoLink) ? url.href : null;
+  }
+
+  return null;
+}
+
+function getVideoInfo(url) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(ytDlpPath, [
+      '--ignore-config',
+      '--dump-single-json',
+      '--skip-download',
+      '--no-playlist',
+      '--no-warnings',
+      '--format',
+      'best[ext=mp4]/best',
+      url
+    ], { windowsHide: true });
+
+    const output = [];
+    let outputSize = 0;
+    let stderr = '';
+    const timeout = setTimeout(() => child.kill(), 30000);
+
+    child.stdout.on('data', chunk => {
+      outputSize += chunk.length;
+      if (outputSize > 5 * 1024 * 1024) child.kill();
+      else output.push(chunk);
+    });
+    child.stderr.on('data', chunk => {
+      stderr = `${stderr}${chunk}`.slice(-2000);
+    });
+    child.on('error', error => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.on('close', code => {
+      clearTimeout(timeout);
+      if (code !== 0 || outputSize > 5 * 1024 * 1024) {
+        reject(new Error(stderr.trim() || `yt-dlp exited with ${code}`));
+        return;
+      }
+
+      try {
+        resolve(JSON.parse(Buffer.concat(output).toString('utf8')));
+      } catch (error) {
+        reject(new Error(`Could not parse video metadata: ${error.message}`));
+      }
+    });
+  });
+}
+
+app.post('/api/platform/download', async (req, res) => {
+  const { url, platform } = req.body || {};
+  const videoUrl = validatePlatformUrl(url, platform);
+  if (!videoUrl) {
+    return res.status(400).json({ error: 'Geçerli bir Instagram Reels veya TikTok video bağlantısı gir.' });
+  }
+
+  try {
+    const info = await getVideoInfo(videoUrl);
+
+    if (!info || info._type === 'playlist' || (!info.url && !info.formats?.length)) {
+      return res.status(404).json({ error: 'Bu bağlantıda indirilebilir bir video bulunamadı.' });
+    }
+
+    const downloadUrl = `/api/platform-video?platform=${platform}&url=${encodeURIComponent(videoUrl)}`;
+    res.json({
+      success: true,
+      tweet: {
+        author: info.uploader || info.channel || platform,
+        username: info.uploader_id || '',
+        avatar: '',
+        text: info.title || info.description || '',
+        thumbnail: info.thumbnail || ''
+      },
+      downloads: [{
+        url: downloadUrl,
+        quality: info.height ? `${info.height}p` : 'MP4',
+        label: 'Video',
+        icon: '↓',
+        color: '#284b39'
+      }]
+    });
+  } catch (error) {
+    console.error('Platform video lookup error:', error.message);
+    res.status(502).json({ error: 'Video bilgisi alınamadı. Bağlantıyı kontrol edip tekrar dene.' });
+  }
+});
+
+app.get('/api/platform-video', (req, res) => {
+  const { url, platform } = req.query;
+  const videoUrl = validatePlatformUrl(url, platform);
+  if (!videoUrl) {
+    return res.status(400).send('Geçerli bir Instagram veya TikTok video bağlantısı gerekli.');
+  }
+
+  const child = spawn(ytDlpPath, [
+    '--ignore-config',
+    '--format',
+    'best[ext=mp4]/best',
+    '--output',
+    '-',
+    '--max-filesize',
+    '100M',
+    '--no-playlist',
+    '--no-warnings',
+    '--quiet',
+    videoUrl
+  ], { windowsHide: true });
+
+  let stderr = '';
+  child.stderr.on('data', chunk => {
+    stderr = `${stderr}${chunk}`.slice(-2000);
+  });
+  child.on('error', error => {
+    console.error('Platform video download error:', error.message);
+    if (!res.headersSent) res.status(503).send('Video indirme aracı başlatılamadı.');
+    else res.destroy(error);
+  });
+  child.on('close', code => {
+    if (code !== 0) {
+      console.error('Platform video download failed:', stderr.trim() || `yt-dlp exited with ${code}`);
+      if (!res.headersSent) res.status(502).send('Video indirilemedi. Bağlantıyı kontrol edip tekrar dene.');
+      else if (!res.writableEnded) res.destroy();
+    }
+  });
+  res.on('close', () => {
+    if (!res.writableEnded && child.exitCode === null) child.kill();
+  });
+
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="social-video-${Date.now()}.mp4"`);
+  const timeout = setTimeout(() => child.kill(), 120000);
+  child.on('close', () => clearTimeout(timeout));
+  child.stdout.pipe(res);
+});
 
 app.post('/api/download', async (req, res) => {
   try {

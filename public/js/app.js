@@ -2,8 +2,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlInput = document.getElementById('urlInput');
   const pasteBtn = document.getElementById('pasteBtn');
   const downloadBtn = document.getElementById('downloadBtn');
+  const shareWhatsAppBtn = document.getElementById('shareWhatsApp');
   const errorMsg = document.getElementById('errorMsg');
   const resultsSection = document.getElementById('results');
+  const platformCards = document.querySelectorAll('.platform-card');
+  let selectedPlatform = 'x';
+  let currentVideoUrl = '';
+
+  const platformSettings = {
+    x: { placeholder: 'X video bağlantısını buraya yapıştır...', label: 'X video bağlantısı' },
+    instagram: { placeholder: 'Instagram Reels bağlantısını buraya yapıştır...', label: 'Instagram video bağlantısı' },
+    tiktok: { placeholder: 'TikTok video bağlantısını buraya yapıştır...', label: 'TikTok video bağlantısı' }
+  };
+
+  platformCards.forEach(card => {
+    card.addEventListener('click', () => {
+      selectedPlatform = card.dataset.platform;
+      platformCards.forEach(platformCard => {
+        const isSelected = platformCard === card;
+        platformCard.classList.toggle('platform-active', isSelected);
+        platformCard.setAttribute('aria-pressed', String(isSelected));
+        platformCard.querySelector('.platform-state').textContent = isSelected ? 'SEÇİLİ' : 'SEÇ';
+      });
+      urlInput.placeholder = platformSettings[selectedPlatform].placeholder;
+      urlInput.setAttribute('aria-label', platformSettings[selectedPlatform].label);
+      urlInput.focus();
+      hideError();
+      hideResults();
+    });
+  });
 
   pasteBtn.addEventListener('click', async () => {
     try {
@@ -21,40 +48,55 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   downloadBtn.addEventListener('click', fetchVideo);
+  shareWhatsAppBtn.addEventListener('click', shareOnWhatsApp);
 
   async function fetchVideo() {
     const url = urlInput.value.trim();
     if (!url) {
-      showError('Please enter a Twitter/X video link.');
+      showError(`Lütfen bir ${platformSettings[selectedPlatform].label} gir.`);
       return;
     }
 
-    if (!/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(url)) {
-      showError('Invalid link format. Example: https://x.com/user/status/123456789');
+    const validUrlPatterns = {
+      x: /^https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/(?:\w+\/status|i\/status)\/\d+/i,
+      instagram: /^https:\/\/(?:www\.)?instagram\.com\/(?:reel|reels|p|tv)\/[A-Za-z0-9_-]+/i,
+      tiktok: /^https:\/\/(?:(?:www\.|m\.)?tiktok\.com\/(?:@[^/]+\/video\/\d+|t\/[A-Za-z0-9_-]+)|(?:vm|vt)\.tiktok\.com\/[A-Za-z0-9]+)/i
+    };
+
+    if (!validUrlPatterns[selectedPlatform].test(url)) {
+      const examples = {
+        x: 'https://x.com/kullanici/status/123456789',
+        instagram: 'https://www.instagram.com/reel/...',
+        tiktok: 'https://www.tiktok.com/@kullanici/video/...'
+      };
+      showError(`Geçerli bir ${platformSettings[selectedPlatform].label} gir. Örnek: ${examples[selectedPlatform]}`);
       return;
     }
 
     setLoading(true);
     hideError();
     hideResults();
+    currentVideoUrl = '';
+    shareWhatsAppBtn.disabled = true;
 
     try {
-      const response = await fetch('/api/download', {
+      const endpoint = selectedPlatform === 'x' ? '/api/download' : '/api/platform/download';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, platform: selectedPlatform })
       });
 
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        showError(data.error || 'Something went wrong. Please try again.');
+        showError(data.error || 'Bir sorun oluştu. Lütfen tekrar dene.');
         return;
       }
 
       showResults(data);
     } catch {
-      showError('Connection error. Please check your internet connection and try again.');
+      showError('Bağlantı kurulamadı. İnternet bağlantını kontrol edip tekrar dene.');
     } finally {
       setLoading(false);
     }
@@ -62,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showResults(data) {
     const { tweet, downloads } = data;
+    currentVideoUrl = downloads.length ? downloads[0].url : '';
+    shareWhatsAppBtn.disabled = !currentVideoUrl;
 
     const avatar = document.getElementById('tweetAvatar');
     if (tweet.avatar) {
@@ -107,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Download
+          İndir
         </button>
       `;
 
@@ -115,11 +159,13 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const videoUrl = decodeURIComponent(btn.dataset.url);
+        currentVideoUrl = videoUrl;
         downloadVideo(videoUrl);
       });
 
       option.addEventListener('click', () => {
         const videoUrl = decodeURIComponent(btn.dataset.url);
+        currentVideoUrl = videoUrl;
         downloadVideo(videoUrl);
       });
 
@@ -131,13 +177,58 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function downloadVideo(url) {
-    const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+    const proxyUrl = url.startsWith('/api/platform-video')
+      ? url
+      : `/api/proxy?url=${encodeURIComponent(url)}`;
     const a = document.createElement('a');
     a.href = proxyUrl;
     a.download = `twitter-video-${Date.now()}.mp4`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  async function shareOnWhatsApp() {
+    const sourceUrl = urlInput.value.trim();
+    if (!sourceUrl) {
+      showError('Paylaşmak için önce bir video bağlantısı bul.');
+      return;
+    }
+
+    if (navigator.share && navigator.canShare && currentVideoUrl) {
+      let file;
+      try {
+        const response = await fetch(currentVideoUrl.startsWith('/api/')
+          ? currentVideoUrl
+          : `/api/proxy?url=${encodeURIComponent(currentVideoUrl)}`);
+        if (!response.ok) {
+          showError('Video paylaşım için hazırlanamadı. Videoyu indirip WhatsApp üzerinden gönderebilirsin.');
+          return;
+        }
+        const video = await response.blob();
+        file = new File([video], 'twitsave-video.mp4', {
+          type: video.type || 'video/mp4'
+        });
+      } catch {
+        showError('Video paylaşım için hazırlanamadı. Videoyu indirip WhatsApp üzerinden gönderebilirsin.');
+        return;
+      }
+
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'TwitSave videosu' });
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+          showError('Paylaşım menüsü açılamadı. Videoyu indirip WhatsApp üzerinden gönderebilirsin.');
+          return;
+        }
+      }
+    }
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Video bağlantısı: ${sourceUrl}`)}`;
+    const whatsappWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    if (!whatsappWindow) window.location.assign(whatsappUrl);
   }
 
   function setLoading(loading) {

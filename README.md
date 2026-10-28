@@ -1,15 +1,17 @@
-# TwitSave - Twitter Video İndirici
+# TwitSave - Sosyal Video İndirici
 
-Pastel temalı, modern ve şık tasarımlı Twitter/X video indirme web uygulaması.
+X, Instagram ve TikTok video bağlantılarını indirmeye yardımcı olan web uygulaması.
 
 ## Özellikler
 
-- Pastel renkli, elit UI tasarımı
+- Koyu yeşil ve krem renk paletli responsive arayüz
 - Tam mobil ve desktop uyumlu (responsive)
-- 3 farklı kalite seçeneği (Yüksek/Orta/Düşük)
-- Hızlı video indirme
+- X, Instagram Reels ve TikTok video bağlantısı desteği
+- Cihaz destekliyorsa videoyu WhatsApp paylaşım menüsünden gönderme
 - Google Ads entegrasyonu hazır
 - SEO optimizasyonu yapılmış
+
+İndirilen medya platformun sunduğu kaynak biçiminde kalır; kaynak videodaki filigran korunur. İndirme hakkına sahip olduğunuz içerikleri kullanın. Instagram ve TikTok desteği `yt-dlp` ile herkese açık bağlantılarda çalışır; özel hesaplar veya oturum açma gerektiren videolar desteklenmez.
 
 ## Kurulum
 
@@ -19,6 +21,8 @@ npm start
 ```
 
 Tarayıcıda `http://localhost:3000` adresini açın.
+
+Kurulum sırasında `yt-dlp` resmi GitHub sürümünden indirilir. Kurulum ve dağıtım ortamının GitHub'a erişebilmesi gerekir. Instagram/TikTok video akışı 100 MB ile sınırlıdır.
 
 ## Vercel'e Deploy
 
